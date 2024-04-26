@@ -4,23 +4,26 @@ import matplotlib.pyplot as plt
 import PySimpleGUI as sg
 from leitura import ler_grafo
 
-def Grafo(arestas):
+
+# Functions
+
+def Grafo(arestas: list[tuple]) -> nx.DiGraph:
     G = nx.DiGraph(arestas)
     drawGraph(G)
 
     return G
 
-def drawGraph(graph):
+def drawGraph(graph: nx.DiGraph):
     nx.draw_networkx(graph, with_labels=True)
     plt.savefig("grafo.png")
     plt.clf()
 
 
-
-#Variables
+# Variables
 
 G = None
 
+# Definção da Janela
 
 sg.theme('DarkBlack')
 
@@ -40,6 +43,7 @@ tipoGrafo = [
     [sg.Radio('Não direcionado', group_id=1, default=True, key='nao_direcionado'), sg.Radio('Direcionado', group_id=1, default=False)]
 ]
 
+# Layout da janela
 layout = [
     [sg.Frame('Tipo do Grafo', tipoGrafo)],
     [sg.Input(key='-IN-'), sg.FileBrowse(), sg.Button("Ler", key='read')],
@@ -51,6 +55,8 @@ layout = [
 
 window = sg.Window('Grafos', layout, font=('Bahnschrift SemiBold Condensed',15), resizable=True, element_justification='center')
 counter = 0
+
+# Loop usado para manter a janela ativa e registrar eventos
 while True:
     event, values = window.read()
     if event == 'Cancel' or event is None:
@@ -68,7 +74,7 @@ while True:
         print(event)
 
     elif event == 'read':
-        if(values['-IN-'] == ''):
+        if values['-IN-'] == '':
             text = 'Nenhum grafo foi selecionado'
             window['texto'].update(value=text)
         else:
