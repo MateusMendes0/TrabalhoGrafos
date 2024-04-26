@@ -18,6 +18,18 @@ def drawGraph(graph: nx.DiGraph):
     plt.clf()
 
 def janelaRepresentacoes():
+
+    opcoesRepresentacoes = [
+        [
+            sg.Button('Matriz de adjacência', key='matriz'),
+            sg.Button('Lista de adjacência', key='lista'),
+            sg.Button('Representação gráfica', key='grafica'),
+        ]
+    ]
+
+    outputRepresentacao = [
+        [sg.Text(size=(60, 10), key='texto')]
+    ]
     
     representacoesLayout = [
         [sg.Frame('', opcoesRepresentacoes)],
@@ -42,6 +54,30 @@ def janelaRepresentacoes():
             print('lista')
             
 def janelaOperacoes():
+
+    operacoesVertice = [
+        [
+            sg.Button('Inserir vertice', key='inserirV'),
+            sg.Input(key='-IN-', expand_x=False),
+            sg.Button('Remover vertice', key='removerV'),
+            sg.Input(key='-IN-', expand_x=False),
+        ]
+    ]
+
+    operacoesAresta = [
+        [
+            sg.Button('Inserir aresta', key='inserirA'),
+            sg.Input(key='-IN-', expand_x=False),
+            sg.Button('Remover aresta', key='removerA'),
+            sg.Input(key='-IN-', expand_x=False),
+        ]
+    ]
+
+    outputOperacao = [
+        [sg.Text(size=(60, 10), key='texto')]
+    ]
+
+
     operacoesLayout = [
         [sg.Frame('operacoesVertice', operacoesVertice)],
         [sg.Frame('operacoesAresta', operacoesAresta)],
@@ -67,6 +103,10 @@ def janelaOperacoes():
             print('removerA')
 
 def janelaVerificacoes():
+
+    outputVerificacao = [
+        [sg.Text(size=(60, 10), key='texto')]
+    ]
     
     verificacoesLayout = [
         [sg.Frame('Saída', outputVerificacao)],
@@ -99,6 +139,7 @@ def janelaVerificacoes():
         if event == 'Cancel' or event is None:
             break
 
+
 # Variables
 G = None
 
@@ -129,45 +170,7 @@ representacoesOperacoesVerificacoes = [
     ]
 ]
 
-opcoesRepresentacoes = [
-    [
-        sg.Button('Matriz de adjacência',key='matriz'),
-        sg.Button('Lista de adjacência',key='lista'),
-        sg.Button('Representação gráfica',key='grafica'),
-    ]
-]
-
-operacoesVertice = [
-    [
-        sg.Button('Inserir vertice',key='inserirV'),
-        sg.Input(key='-IN-', expand_x=False),
-        sg.Button('Remover vertice',key='removerV'),
-        sg.Input(key='-IN-', expand_x=False),
-    ]
-]
-
-operacoesAresta = [
-    [
-        sg.Button('Inserir aresta',key='inserirA'),
-        sg.Input(key='-IN-', expand_x=False),
-        sg.Button('Remover aresta',key='removerA'),
-        sg.Input(key='-IN-', expand_x=False),
-    ]
-]
-
 outputwin = [
-    [sg.Text(size=(60,10) , key='texto')]
-]
-
-outputRepresentacao = [
-    [sg.Text(size=(60,10) , key='texto')]
-]
-
-outputOperacao = [
-    [sg.Text(size=(60,10) , key='texto')]
-]
-
-outputVerificacao = [
     [sg.Text(size=(60,10) , key='texto')]
 ]
 
@@ -188,6 +191,7 @@ layout = [
 
 window = sg.Window('Grafos', layout, font=('Bahnschrift SemiBold Condensed',15), resizable=True, element_justification='center', grab_anywhere=True).Finalize()
 window.Maximize()
+
 counter = 0
 
 # Loop usado para manter a janela ativa e registrar eventos
