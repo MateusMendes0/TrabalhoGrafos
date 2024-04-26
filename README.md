@@ -1,4 +1,4 @@
-Python >= 3.9.0
+Python >= 3.10.0
 
 For downloading :
   download as a zip or
