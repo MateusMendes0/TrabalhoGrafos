@@ -28,6 +28,7 @@ def janelaRepresentacoes():
     ]
 
     outputRepresentacao = [
+        [sg.Image(key='image')],
         [sg.Text(size=(60, 10), key='texto')]
     ]
     
@@ -47,11 +48,22 @@ def janelaRepresentacoes():
             representacoesWindow.close()
             break
         elif event == 'matriz':
-            print('matriz')
+            representacoesWindow['image'].update(filename=None)
+            matriz = nx.adjacency_matrix(G).todense()
+            representacoesWindow['texto'].update(value=matriz)
         elif event == 'grafica':
-            print('grafica')
+            representacoesWindow['texto'].update(value='')
+            representacoesWindow['image'].update(filename="grafo.png")
         elif event == 'lista':
-            print('lista')
+            representacoesWindow['image'].update(filename=None)
+            listaDeAdjacencia = ""
+            for vertice in vertices:
+                try:
+                    listaDeAdjacencia += f"{vertice} -> {list(G[vertice].keys())} \n"
+                except:
+                    listaDeAdjacencia += f"O vértice {vertice} não possui conexao com outro vertice"
+            representacoesWindow['texto'].update(value=listaDeAdjacencia)
+
             
 def janelaOperacoes():
 
@@ -212,7 +224,10 @@ while True:
         print(event)
     
     elif event == 'representacoes':
-        janelaRepresentacoes()
+        if(G):
+            janelaRepresentacoes()
+        else:
+            sg.popup("Leia um grafo para ver as representações!")
 
     elif event == 'operacoes':
         janelaOperacoes()
@@ -226,9 +241,11 @@ while True:
             window['texto'].update(value=text)
         else:
             print(f'Arquivo Escolhido: {values["-IN-"]}')
-            vertices, arestas = ler_grafo(values['-IN-'], values['nao_direcionado'])
-            G = Grafo(arestas)
+            try:
+                vertices, arestas = ler_grafo(values['-IN-'], values['nao_direcionado'])
+                G = Grafo(arestas)
+                sg.popup("Grafo lido com sucesso!")
+            except:
+                sg.popup("Erro ao ler grafo")
             # window['image'].update(filename="grafo.png")
-                
-           
             window['texto'].update(value=arestas)
