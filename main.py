@@ -4,13 +4,48 @@ import matplotlib.pyplot as plt
 import PySimpleGUI as sg
 from leitura import ler_grafo
 
+vertices = []
+arestas = []
+nao_direcionado = True
 
 # Functions
-def Grafo(arestas: list[tuple]) -> nx.DiGraph:
-    G = nx.DiGraph(arestas)
+def Grafo(arestas: dict) -> nx.DiGraph:
+    aresta_nx = []
+    for key in arestas:
+        for aresta in arestas[key]:
+            aresta_nx.append((key, aresta[1],aresta[2]))
+
+    G = nx.DiGraph()
+    for aresta in aresta_nx:
+        G.add_edge(aresta[0],aresta[1], weight=aresta[2])
     drawGraph(G)
 
     return G
+
+def salvar_arquivo(vertices: list, arestas: list, filepath):
+    file = open(filepath, 'w')
+    final = 'V = {'
+    for n in range(len(vertices)):
+        if n != len(vertices)-1:
+            final += str(vertices[n])+","
+        else:
+            final += str(vertices[n])+'}; A = {'
+
+    for n in range(len(arestas)):
+        if n != len(arestas)-1:
+            final += '('
+            final += str(arestas[n][0])+","
+            final += str(arestas[n][1])+"),"
+        else:
+            final+= '('
+            final += str(arestas[n][0])+","
+            final += str(arestas[n][1])+")};"
+
+    file.write(final)
+    print(final)
+
+
+
 
 def drawGraph(graph: nx.DiGraph):
     nx.draw_networkx(graph, with_labels=True)
@@ -28,8 +63,8 @@ def janelaRepresentacoes():
     ]
 
     outputRepresentacao = [
-        [sg.Image(key='image')],
-        [sg.Text(size=(60, 10), key='texto')]
+        [sg.Text(size=(60, 10), key='texto')],
+        [sg.Image(key='image')]
     ]
     
     representacoesLayout = [
@@ -48,40 +83,44 @@ def janelaRepresentacoes():
             representacoesWindow.close()
             break
         elif event == 'matriz':
-            representacoesWindow['image'].update(filename=None)
-            matriz = nx.adjacency_matrix(G).todense()
-            representacoesWindow['texto'].update(value=matriz)
+            print('matriz')
+            #representacoesWindow['image'].update(filename=None)
+            #matriz = nx.adjacency_matrix(G).todense()
+            #representacoesWindow['texto'].update(value=matriz)
         elif event == 'grafica':
+            print('grafica')
+            G = Grafo(arestas)
             representacoesWindow['texto'].update(value='')
             representacoesWindow['image'].update(filename="grafo.png")
         elif event == 'lista':
+            print('lista')
             representacoesWindow['image'].update(filename=None)
             listaDeAdjacencia = ""
             for vertice in vertices:
                 try:
-                    listaDeAdjacencia += f"{vertice} -> {list(G[vertice].keys())} \n"
+                    listaDeAdjacencia += f"{vertice} -> {arestas[vertice]} \n"
                 except:
                     listaDeAdjacencia += f"O vértice {vertice} não possui conexao com outro vertice"
             representacoesWindow['texto'].update(value=listaDeAdjacencia)
 
-            
+
 def janelaOperacoes():
 
     operacoesVertice = [
         [
             sg.Button('Inserir vertice', key='inserirV'),
-            sg.Input(key='-IN-', expand_x=False),
+            sg.Input(key='add-v', expand_x=False),
             sg.Button('Remover vertice', key='removerV'),
-            sg.Input(key='-IN-', expand_x=False),
+            sg.Input(key='remove-v', expand_x=False),
         ]
     ]
 
     operacoesAresta = [
         [
             sg.Button('Inserir aresta', key='inserirA'),
-            sg.Input(key='-IN-', expand_x=False),
+            sg.Input(key='add-a', expand_x=False),
             sg.Button('Remover aresta', key='removerA'),
-            sg.Input(key='-IN-', expand_x=False),
+            sg.Input(key='remove-a', expand_x=False),
         ]
     ]
 
@@ -107,10 +146,28 @@ def janelaOperacoes():
             break
         elif event == 'inserirV':
             print('inserirV')
+            valor = values['add-v']
+
+            if valor not in vertices:
+                G.add_node(valor)
+                vertices.append(valor)
+                salvar_arquivo(vertices, arestas, './ler.txt')
         elif event == 'removerV':
             print('removerV')
         elif event == 'inserirA':
             print('inserirA')
+            valor_a = values['add-a']
+            vertices_new = (valor_a.split(','))
+            vertices_new[0] = int(vertices_new[0])
+            vertices_new[1] = int(vertices_new[1])
+            arestas.append(tuple(vertices_new))
+
+            if nao_direcionado:
+                tupla_naoDirecionado = (vertices_new[1],vertices_new[0])
+                arestas.append(tupla_naoDirecionado)
+
+            salvar_arquivo(vertices,arestas, './ler.txt')
+
         elif event == 'removerA':
             print('removerA')
 
@@ -187,7 +244,7 @@ outputwin = [
 ]
 
 tipoGrafo = [
-    [sg.Radio('Não direcionado', group_id=1, default=True, key='nao_direcionado'), sg.Radio('Direcionado', group_id=1, default=False)]
+    [sg.Radio('Não direcionado', group_id=1, default=True, key='nao_direcionado', enable_events=True), sg.Radio('Direcionado', group_id=1, default=False, enable_events=True)]
 ]
 
 # Layout da janela
@@ -205,10 +262,10 @@ window = sg.Window('Grafos', layout, font=('Bahnschrift SemiBold Condensed',15),
 window.Maximize()
 
 counter = 0
-
 # Loop usado para manter a janela ativa e registrar eventos
 while True:
     event, values = window.read()
+
     if event == 'Cancel' or event is None:
         break
     elif event == 'dfs':
@@ -224,6 +281,7 @@ while True:
         print(event)
     
     elif event == 'representacoes':
+        janelaRepresentacoes()
         if(G):
             janelaRepresentacoes()
         else:
@@ -235,6 +293,9 @@ while True:
     elif event == 'verificacoes':
         janelaVerificacoes()
 
+    elif event == 'nao_direcionado':
+        nao_direcionado = values['nao_direcionado']
+
     elif event == 'read':
         if values['-IN-'] == '':
             text = 'Nenhum grafo foi selecionado'
@@ -242,10 +303,12 @@ while True:
         else:
             print(f'Arquivo Escolhido: {values["-IN-"]}')
             try:
-                vertices, arestas = ler_grafo(values['-IN-'], values['nao_direcionado'])
-                G = Grafo(arestas)
+                vertices, arestas, nao_direcionado = ler_grafo(values['-IN-'], values['nao_direcionado'])
+                nao_direcionado = values['nao_direcionado']
                 sg.popup("Grafo lido com sucesso!")
-            except:
+            except Exception as e:
+                print(e)
                 sg.popup("Erro ao ler grafo")
             # window['image'].update(filename="grafo.png")
+           
             window['texto'].update(value=arestas)
