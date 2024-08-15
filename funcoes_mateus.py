@@ -125,5 +125,5 @@ if __name__ == '__main__':
 
     print(conexo(0, arestas, True))
 
-    comp = componentes_conexas(arestas)
+    comp = componentes_conexas(grafo3)
     print(" ".join(map(str, comp[0])))
