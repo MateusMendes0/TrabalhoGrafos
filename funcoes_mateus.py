@@ -1,3 +1,5 @@
+import leitura
+
 def dfs(grafo: dict, v: int):
     arvore_dfs = []
     pilha = [v]
@@ -23,7 +25,7 @@ def conexo(v: int, grafo: dict, nao_direcionado: bool):
     if not nao_direcionado:
         for i in range(0, len(grafo)):
             for aresta in grafo[i]:
-                grafo[aresta[1]].append((aresta[0], i, grafo[2]))
+                grafo[aresta[1]].append((aresta[0], i, aresta[2]))
 
     visitado = [False] * len(list(grafo.keys()))
 
@@ -43,25 +45,28 @@ def conexo(v: int, grafo: dict, nao_direcionado: bool):
         return 1
     return 0
 
-def componentes_conexas(grafo:dict):
+def componentes_conexas(grafo:dict) -> list:
     contador = 0
     visitado = [False] * len(list(grafo.keys()))
 
     pilha = []
-
+    comp_conexos = []
     for i in range(len(visitado)):
         if not visitado[i]:
+            comp_conexos1 = []
             contador += 1
             pilha.append(i)
             while pilha:
                 vertice = pilha.pop()
                 if not visitado[vertice]:
+                    comp_conexos1.append(vertice)
                     visitado[vertice] = True
 
                     for vizinho in grafo[vertice]:
                         if not visitado[vizinho[1]]:
                             pilha.append(vizinho[1])
-    return contador
+            comp_conexos.append(sorted(comp_conexos1))
+    return comp_conexos
 
 
 if __name__ == '__main__':
@@ -112,9 +117,13 @@ if __name__ == '__main__':
         7: [(3, 6, 2)]
     }
 
+    vertices, arestas, nao_direcionado = leitura.ler_grafo()
 
-    print(dfs(grafo6, 0))
+    print(arestas)
 
-    print(conexo(0, grafo6, False))
+    print(dfs(arestas, 0))
 
-    print(componentes_conexas(grafo))
+    print(conexo(0, arestas, True))
+
+    comp = componentes_conexas(arestas)
+    print(" ".join(map(str, comp[0])))
