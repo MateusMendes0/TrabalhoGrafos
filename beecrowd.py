@@ -98,7 +98,38 @@ def fecho_transitivo(grafo, vertice_inicial=0):
     print(f"Fecho transitivo a partir do vértice {vertice_inicial}: {fecho}")
 
 fecho_transitivo(arestas, 0)
-# FUNC MAIN
+
+# árvore geradora mínima
+
+import heapq
+vertices, arestas, nao_direcionado = ler_grafo()
+
+def economia(arestas):
+    visitados = set()
+    pq = []
+    total_minimo = 0
+
+    # Seleciona um vértice inicial (o primeiro vértice da lista de chaves do dicionário)
+    inicial = next(iter(arestas))
+    visitados.add(inicial)
+    
+    # Adiciona as arestas conectadas ao vértice inicial na fila de prioridades
+    for id_aresta, vertice, peso in arestas[inicial]:
+        heapq.heappush(pq, (peso, vertice))
+
+    # Processa a fila de prioridades para encontrar a árvore geradora mínima
+    while pq:
+        peso, v = heapq.heappop(pq)
+        if v not in visitados:
+            visitados.add(v)
+            total_minimo += peso
+            for _, proximo, p in arestas[v]:
+                if proximo not in visitados:
+                    heapq.heappush(pq, (p, proximo))
+
+    return total_minimo
+
+# func main
 def main():
 
     opcoes = input()
