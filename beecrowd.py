@@ -16,7 +16,89 @@ def ler_grafo():
             arestas[v2].append((id, v1, p))
     return list(arestas.keys()), arestas, nao_direcionado
 
+# POSSUI CICLO (PAI MANJA)
+def possui_ciclo(vertices, arestas, nao_direcionado):
+    visitado = set()
+    pai = {}
 
+    def busca_profundidade(atual, anterior):
+        visitado.add(atual)
+        for id_aresta, vizinho, peso in arestas[atual]:
+            if vizinho not in visitado:
+                pai[vizinho] = atual
+                if busca_profundidade(vizinho, atual):
+                    return True
+            elif vizinho != anterior:
+                # Encontrou um ciclo
+                return True
+        return False
+
+    # Verificar todos os componentes do grafo
+    for vertice in vertices:
+        if vertice not in visitado:
+            if busca_profundidade(vertice, -1):
+                return True
+    return False
+# ORDENAÇÃO TOPOLÓGICA (PAI MANJA)
+def ordenacao_topologica(grafo, nao_direcionado):
+    if nao_direcionado:
+        return -1
+    
+    #verificar ciclo
+    
+    # Inicializando estruturas auxiliares
+    visitado = set()
+    pilha = []
+    resultado = []
+    
+    # Função auxiliar para DFS
+    def dfs(v):
+        visitado.add(v)
+        for _, destino, _ in sorted(grafo.get(v, []), key=lambda x: x[1]):
+            if destino not in visitado:
+                dfs(destino)
+        pilha.append(v)
+    
+    # Considerando a ordem lexicográfica dos vértices
+    for vertice in sorted(grafo.keys()):
+        if vertice not in visitado:
+            dfs(vertice)
+    
+    # A ordem topológica será o reverso da pilha
+    while pilha:
+        resultado.append(pilha.pop())
+    return resultado
+
+topologico = ordenacao_topologica(arestas, nao_direcionado)
+print(f"Ordenação topológica dos vértices: {topologico}")
+
+# FECHO TRANSITIVO:
+def fecho_transitivo(grafo, vertice_inicial=0):
+    #grafo_9.txt é bom p testar
+
+    if (nao_direcionado):
+        print(-1)
+    # Inicializando a estrutura auxiliar para armazenar os vértices alcançáveis
+    visitado = set()
+    fecho = []
+
+    # Função auxiliar para DFS
+    def dfs(v):
+        visitado.add(v)
+        fecho.append(v)
+        # Ordenando as arestas pela ordem lexicográfica do destino
+        for _, destino, _ in sorted(grafo.get(v, []), key=lambda x: x[1]):
+            if destino not in visitado:
+                dfs(destino)
+
+    # Iniciar DFS a partir do vértice inicial
+    dfs(vertice_inicial)
+
+    # Imprimir o fecho transitivo ordenado pela ordem lexicográfica dos vértices
+    print(f"Fecho transitivo a partir do vértice {vertice_inicial}: {fecho}")
+
+fecho_transitivo(arestas, 0)
+# FUNC MAIN
 def main():
 
     opcoes = input()
