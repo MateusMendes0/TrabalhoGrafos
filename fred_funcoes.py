@@ -1,5 +1,6 @@
 from leitura import ler_grafo
 from collections import deque
+from collections import defaultdict
 import heapq
 
 vertices, arestas, nao_direcionado = ler_grafo()
@@ -7,7 +8,8 @@ vertices, arestas, nao_direcionado = ler_grafo()
 def euleriano(arestas: dict) -> int:
     # Para ver se é euleriano basta verificar se todos os vértices possuem grau par. Se sim, é euleriano (o grafo precisa ser conexo)
 
-    ############# CHAMAR FUNÇÃO DE VER SE É CONEXO (se for conexo, continuar na função, se não for, retornar 0)
+    if (not conexo(list(arestas.keys())[0], arestas, nao_direcionado)):
+        return 0
     
     for vertice in arestas: 
         # Para cada vértice, ver quantas arestas ele possui. 
@@ -15,7 +17,6 @@ def euleriano(arestas: dict) -> int:
         if (len(arestas[vertice]) % 2 == 1):
             return 0
     return 1
-
 
 def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
     visitados = set()
@@ -35,11 +36,7 @@ def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
 
     return arvore
 
-
-
-
-
-def valor_do_caminho_minimo_entre_2_vertices(grafo):
+def valor_do_caminho_minimo_entre_2_vertices(grafo: dict) -> int:
     vertices = list(grafo.keys())
 
     origem = min(vertices)
@@ -82,14 +79,81 @@ def valor_do_caminho_minimo_entre_2_vertices(grafo):
                 heapq.heappush(fila, (distancia, vizinho))
     return -1
 
+def conexo(v: int, grafo: dict, nao_direcionado: bool):
+    if not nao_direcionado:
+        for i in range(0, len(grafo)):
+            for aresta in grafo[i]:
+                grafo[aresta[1]].append((aresta[0], i, grafo[2]))
+                
+    visitado = {k: False for k in grafo} # mudei essa
+    pilha = [v]
+
+    while pilha:
+        vertice = pilha.pop()
+
+        if not visitado[vertice]:
+            visitado[vertice] = True
+
+            for vizinho in grafo.get(vertice, []): # mudei essa
+                if not visitado[vizinho[1]]:
+                    pilha.append(vizinho[1])
+
+    if all(visitado.values()):
+        return 1
+    return 0
+
+def vertices_de_articulacao(arestas: dict) -> list:
+    vertices_ponte = []
+
+    if not nao_direcionado:
+        return -1
+
+    for vertice_remover in arestas.keys():
+        grafo_temp = {}
+        
+        for vertice, adjacencias in arestas.items():
+            if vertice == vertice_remover:
+                continue
+
+            novas_adjacencias = []
+
+            for idAresta, destino, peso in adjacencias:
+                if destino != vertice_remover:
+                    novas_adjacencias.append((idAresta, destino, peso))
+
+            grafo_temp[vertice] = novas_adjacencias
+
+        if grafo_temp:
+            vertice_inicial = next(iter(grafo_temp))
+            ehConexo = conexo(vertice_inicial, grafo_temp, nao_direcionado)
+            if not ehConexo:
+                vertices_ponte.append(vertice_remover)
+
+    return vertices_ponte
+
+resultado = conexo(1, arestas, nao_direcionado)
+print(resultado)
 
 
 
-arvore = arvore_largura(arestas, 0)
-print(f"Árvore de largura: {arvore}")
+resultado = arvore_largura(arestas, 0)
+print(f"Árvore de largura: {resultado}")
 
-isEuleriano = euleriano(arestas)
-print(f"É euleriano?: {isEuleriano}")
+
+
+resultado = euleriano(arestas)
+print(f"É euleriano?: {resultado}")
+
+
 
 resultado = valor_do_caminho_minimo_entre_2_vertices(arestas)
 print(f"valor_do_caminho_minimo_entre_2_vertices: {resultado}")
+
+
+
+resultado = vertices_de_articulacao(arestas)
+
+if (len(resultado) == 0):
+    print("vertices de articulacao: 0")
+else:
+    print(f"vertices de articulacao: {resultado}")
