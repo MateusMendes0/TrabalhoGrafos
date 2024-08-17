@@ -362,10 +362,11 @@ def dfs(grafo: dict, v: int) -> list:
     return arvore_dfs
 
 def conexo(v: int, grafo: dict, nao_direcionado: bool):
+    grafo_temp = grafo
     if not nao_direcionado:
         for i in range(0, len(grafo)):
             for aresta in grafo[i]:
-                grafo[aresta[1]].append((aresta[0], i, aresta[2]))
+                grafo_temp[aresta[1]].append((aresta[0], i, aresta[2]))
 
     visitado = [False] * len(list(grafo.keys()))
 
@@ -377,7 +378,7 @@ def conexo(v: int, grafo: dict, nao_direcionado: bool):
         if not visitado[vertice]:
             visitado[vertice] = True
 
-            for vizinho in grafo[vertice]:
+            for vizinho in grafo_temp[vertice]:
                 if not visitado[vizinho[1]]:
                     pilha.append(vizinho[1])
 
@@ -413,6 +414,34 @@ def componentes_conexas(grafo:dict, nao_orientado) -> list:
             comp_conexos.append(sorted(comp_conexos1))
     return comp_conexos
 
+
+def bfs_bipartido(grafo, origem, cor):
+    fila = deque([origem])
+    cor[origem] = 0
+
+    while fila:
+        no_atual = fila.popleft()
+        cor_atual = cor[no_atual]
+
+        for id, vizinho, peso in grafo.get(no_atual, []):
+            if vizinho not in cor:
+                cor[vizinho] = 1 - cor_atual
+                fila.append(vizinho)
+            elif cor[vizinho] == cor_atual:
+                return False
+    return True
+
+
+def bipartido(grafo):
+    cor = {}
+
+    for origem in grafo:
+        if origem not in cor:
+            if not bfs_bipartido(grafo, origem, cor):
+                return 0
+
+    return 1
+
 # func main
 def main():
     opcoes = input()
@@ -424,6 +453,8 @@ def main():
             print("conexo ta cagando as outras, criar grafo temporario para manipular")
         elif func == '1':
             print("bipartido")
+            if nao_direcionado:
+                print(bipartido(arestas))
         elif func == '2':
             print(euleriano(arestas, nao_direcionado))
         elif func == '3':

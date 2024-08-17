@@ -1,4 +1,5 @@
 import leitura
+from collections import deque
 
 def dfs(grafo: dict, v: int) -> list:
     arvore_dfs = []
@@ -118,6 +119,44 @@ def fortemente_conexos(grafo:dict, nao_direcionado):
     return componente_forte_conexos
 
 
+
+def bfs_bipartido(grafo, origem, cor):
+    fila = deque([origem])
+    cor[origem] = 0
+
+    while fila:
+        no_atual = fila.popleft()
+        cor_atual = cor[no_atual]
+
+        for id, vizinho, peso in grafo.get(no_atual, []):
+            if vizinho not in cor:
+                cor[vizinho] = 1 - cor_atual
+                fila.append(vizinho)
+            elif cor[vizinho] == cor_atual:
+                return False
+    return True
+
+
+def bipartido(grafo):
+    cor = {}
+
+    for origem in grafo:
+        if origem not in cor:
+            if not bfs_bipartido(grafo, origem, cor):
+                return 0
+
+    return 1
+
+
+# Exemplo de uso
+grafo = {
+    0: [(1, 1, 10), (2, 3, 5)],
+    1: [(2, 0, 10)],
+    2: [(3, 3, 2)],
+    3: [(4, 1, 4)],
+    4: []
+}
+
 if __name__ == '__main__':
     grafo = {0: [(0, 1, 1)], 1: [(0, 0, 1), (1, 2, 1), (2, 3, 1)], 2: [(1, 1, 1), (3, 3, 1)], 3: [(2, 1, 1), (3, 2, 1)]}
     grafo2 = {0: [(0, 4, 1)], 1: [(0, 3, 1), (1, 2, 1), (2, 3, 1)], 2: [(1, 1, 1), (3, 3, 1)], 3: [(2, 1, 1), (3, 2, 1)], 4: [(4, 2, 1)], 5:[]}
@@ -179,5 +218,8 @@ if __name__ == '__main__':
     print("Comp Conexos:")
     print(comp)
 
-    print("Comp Fortemente Conexos")
-    print(len(fortemente_conexos(arestas,nao_direcionado)))
+#    print("Comp Fortemente Conexos")
+#    print(len(fortemente_conexos(arestas,nao_direcionado)))
+
+    print("Bipartido")
+    print(bipartido(arestas))
