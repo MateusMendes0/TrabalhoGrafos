@@ -1,20 +1,32 @@
-def ler_grafo():
-    nao_direcionado = True
-    v, a = map(int, input())
-    direcao = input()
+import heapq
+from collections import deque, defaultdict
+
+def ler_grafo_terminal(nao_direcionado: bool = True):
+    # Lê o número de vértices e arestas
+    v, a = map(int, input("Digite o número de vértices e arestas (separados por espaço): ").split())
+    print(v, a)
+
+    # Lê a direção do grafo
+    direcao = input().strip()
+    print(direcao)
     if direcao != "nao_direcionado":
         nao_direcionado = False
+    print(nao_direcionado)
 
+    # Inicializa o dicionário para armazenar as arestas
     arestas = {}
-    for i in range(0, v, 1):
+    for i in range(v):
         arestas[i] = []
 
-    for i in range(0, a, 1):
-        id, v1, v2, p = map(int, input())
+    # Lê as arestas
+    for i in range(a):
+        id, v1, v2, p = map(int, input().split())
         arestas[v1].append((id, v2, p))
         if nao_direcionado:
             arestas[v2].append((id, v1, p))
+    
     return list(arestas.keys()), arestas, nao_direcionado
+
 
 # POSSUI CICLO (PAI MANJA)
 def possui_ciclo(vertices, arestas, nao_direcionado):
@@ -39,6 +51,7 @@ def possui_ciclo(vertices, arestas, nao_direcionado):
             if busca_profundidade(vertice, -1):
                 return True
     return False
+
 # ORDENAÇÃO TOPOLÓGICA (PAI MANJA)
 def ordenacao_topologica(grafo, nao_direcionado):
     if nao_direcionado:
@@ -69,11 +82,8 @@ def ordenacao_topologica(grafo, nao_direcionado):
         resultado.append(pilha.pop())
     return resultado
 
-topologico = ordenacao_topologica(arestas, nao_direcionado)
-print(f"Ordenação topológica dos vértices: {topologico}")
-
 # FECHO TRANSITIVO:
-def fecho_transitivo(grafo, vertice_inicial=0):
+def fecho_transitivo(grafo, vertice_inicial=0, nao_direcionado=False):
     #grafo_9.txt é bom p testar
 
     if (nao_direcionado):
@@ -93,17 +103,9 @@ def fecho_transitivo(grafo, vertice_inicial=0):
 
     # Iniciar DFS a partir do vértice inicial
     dfs(vertice_inicial)
-
-    # Imprimir o fecho transitivo ordenado pela ordem lexicográfica dos vértices
-    print(f"Fecho transitivo a partir do vértice {vertice_inicial}: {fecho}")
-
-fecho_transitivo(arestas, 0)
+    return fecho
 
 # árvore geradora mínima
-
-import heapq
-vertices, arestas, nao_direcionado = ler_grafo()
-
 def economia(arestas):
     visitados = set()
     pq = []
@@ -129,40 +131,206 @@ def economia(arestas):
 
     return total_minimo
 
+# arestas ponte
+def encontrarPontes(grafo):
+    n = len(grafo)
+    descoberta = [-1] * n
+    menorTempo = [-1] * n
+    pai = [-1] * n
+    tempo = 0
+    pontes = []
+
+    def dfs(u):
+        nonlocal tempo
+        descoberta[u] = menorTempo[u] = tempo
+        tempo += 1
+        
+        for (idAresta, v, peso) in grafo[u]:
+            if descoberta[v] == -1:  # Se v não foi visitado
+                pai[v] = u
+                dfs(v)
+                
+                menorTempo[u] = min(menorTempo[u], menorTempo[v])
+                
+                # Se a menor altura alcançável de v é maior que descoberta de u, (u, v) é uma ponte
+                if menorTempo[v] > descoberta[u]:
+                    pontes.append(idAresta)
+            
+            elif v != pai[u]:  # Atualiza menorTempo[u] para back edge
+                menorTempo[u] = min(menorTempo[u], descoberta[v])
+
+    # Chama DFS para cada vértice não visitado
+    for i in range(n):
+        if descoberta[i] == -1:
+            dfs(i)
+    
+    return pontes
+
+
+
+
+
+# fred
+def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
+    visitados = set()
+    fila = deque([vertice_inicial])
+    
+    arvore = []
+
+    while fila:
+        vertice_atual = fila.popleft()
+        visitados.add(vertice_atual)
+
+        for id_aresta, destino, peso in sorted(arestas.get(vertice_atual, []), key=lambda x: x[1]):
+            if destino not in visitados:
+                fila.append(destino)
+                visitados.add(destino)
+                arvore.append(id_aresta)  
+
+    return arvore
+
+def valor_do_caminho_minimo_entre_2_vertices(grafo: dict):
+    vertices = list(grafo.keys())
+
+    origem = min(vertices)
+    destino = max(vertices)
+
+    # Verificar se o grafo contém pesos diferentes
+    pesos = set()
+    for vertice, arestas in grafo.items():
+        for aresta in arestas:
+            peso = aresta[2]
+            if isinstance(peso, (int, float)):  # Verifica se peso é um número
+                pesos.add(peso)
+            else:
+                raise ValueError(f"Peso inválido encontrado: {peso}")
+    if len(pesos) <= 1:
+        return -1
+    
+    # Initialize-single-source 
+    distancias = {vertice: float('inf') for vertice in grafo}
+    distancias[origem] = 0
+
+    # Fila de prioridades 
+    fila = [(0, origem)]  # (distância, vértice)
+    
+
+    while fila:
+        dist_atual, vertice_atual = heapq.heappop(fila)
+
+        if vertice_atual == destino:
+            return dist_atual
+
+        if dist_atual > distancias[vertice_atual]:
+            continue
+
+        # Fazer relaxamento em cada aresta do vertice atual na lista de prioridades
+        for aresta in grafo[vertice_atual]:
+            _, vizinho, peso = aresta
+            distancia = dist_atual + peso
+
+            # Relaxamento
+            if distancia < distancias[vizinho]:
+                distancias[vizinho] = distancia
+                heapq.heappush(fila, (distancia, vizinho))
+    return -1
+
+def encontra_vertice_articulacao(grafo):
+    # Inicializa estruturas para a busca em profundidade
+    tempo = [0]  # Relógio de tempo da DFS
+    num_vertices = len(grafo)
+    discover = [-1] * num_vertices  # Tempo de descoberta dos vértices na DFS
+    low = [-1] * num_vertices  # Menor tempo de descoberta acessível
+    parent = [-1] * num_vertices  # Vértice pai na DFS
+    articulacao = [False] * num_vertices  # Marca se um vértice é de articulação
+    vertices_articulacao = []  # Lista de vértices de articulação
+
+    def dfs(v):
+        # Aumenta o tempo e marca o tempo de descoberta do vértice
+        discover[v] = low[v] = tempo[0]
+        tempo[0] += 1
+        filhos = 0  # Conta o número de filhos na DFS
+        
+        for (id_aresta, vizinho, peso) in grafo[v]:
+            if discover[vizinho] == -1:  # Se vizinho não foi descoberto
+                parent[vizinho] = v
+                filhos += 1
+                dfs(vizinho)
+
+                # Atualiza o menor tempo de descoberta acessível
+                low[v] = min(low[v], low[vizinho])
+
+                # Checa condição para que v seja vértice de articulação
+                if parent[v] == -1 and filhos > 1:  # Raiz da DFS com mais de 1 filho
+                    articulacao[v] = True
+                if parent[v] != -1 and low[vizinho] >= discover[v]:
+                    articulacao[v] = True
+
+            elif vizinho != parent[v]:  # Atualiza low[v] para back edge
+                low[v] = min(low[v], discover[vizinho])
+
+    # Chama DFS para cada vértice não visitado
+    for i in sorted(grafo.keys()):  # Ordena os vértices em ordem lexicográfica
+        if discover[i] == -1:
+            dfs(i)
+
+    # Coleta os vértices de articulação
+    for i in range(num_vertices):
+        if articulacao[i]:
+            vertices_articulacao.append(i)
+
+    return vertices_articulacao
+
+
+
+
+# tg
+
+
 # func main
 def main():
-
     opcoes = input()
     opcoes = opcoes.split(" ")
-    vertices, arestas, nao_direcionado = ler_grafo()
-
+    print(opcoes)
+    vertices, arestas, nao_direcionado = ler_grafo_terminal()
+    
     for func in opcoes:
-        if func == 0:
+        if func == '0':
+            print("conexo")
+        elif func == '1':
+            print("bipartido")
+        elif func == '2':
+            print("euleriano")
+        elif func == '3':
+            print(possui_ciclo(vertices, arestas, nao_direcionado))
+        elif func == '4':
+            print("componentes conexas")
+        elif func == '5':
+            print("componentes fortemente conexas")
+        elif func == '6':
+            print("vertices de articulacao")
+        elif func == '7':
+            print("encontrarPontes")
+            # print(encontrarPontes(arestas))
+        elif func == '8':
+            print("dfs")
+        elif func == '9':
+            print("arvore_largura")
+            # arvore_largura(arestas, vertice_inicial=0)
+        elif func == '10':
+            print("economia")
+            # print(economia(arestas))
+        elif func == '11':
+            print("ordenacao_topologica")
+            # print(ordenacao_topologica(arestas, nao_direcionado))
+        elif func == '12':
+            print("valor_do_caminho_minimo_entre_2_vertices")
+            # print(valor_do_caminho_minimo_entre_2_vertices(arestas))
+        elif func == '13':
+            print("fluxo maximo")
+        elif func == '14':
+            print("fecho_transitivo")
+            # fecho_transitivo(arestas, 0, nao_direcionado)
 
-        elif func == 1:
 
-        elif func == 2:
-
-        elif func == 3:
-
-        elif func == 4:
-
-        elif func == 5:
-
-        elif func == 6:
-
-        elif func == 7:
-
-        elif func == 8:
-
-        elif func == 9:
-
-        elif func == 10:
-
-        elif func == 11:
-
-        elif func == 12:
-
-        elif func == 13:
-
-        elif func == 14:
+main()
