@@ -20,7 +20,57 @@ def conexo(v: int, grafo: dict, nao_direcionado: bool):
 
     if all(visitado):
         return 1
-    return 0
+    return
+
+def dfs_fortemente_conexo(grafo: dict, v, visitado, pilha=None):
+    visitado[v] = True
+    for aresta in grafo[v]:
+        vertice = aresta[1]
+        if not visitado[vertice]:
+            dfs_fortemente_conexo(grafo, vertice, visitado, pilha)
+    if pilha is not None:
+        pilha.append(v)
+
+
+def transpor_grafo(grafo: dict):
+    grafo_transposto = {v: [] for v in grafo}  # Inicializa todos os vértices com listas vazias
+
+    for i in grafo:
+        for aresta in grafo[i]:
+            # Certifica que o vértice destino existe no grafo transposto
+            if aresta[1] not in grafo_transposto:
+                grafo_transposto[aresta[1]] = []
+            # Adiciona a aresta transposta
+            grafo_transposto[aresta[1]].append((aresta[0], i, aresta[2]))
+
+    print(grafo_transposto)
+    return grafo_transposto
+
+
+def fortemente_conexos(grafo: dict, nao_direcionado):
+    if nao_direcionado:
+        return -1
+
+    pilha = []
+    visitado = [False] * len(grafo)
+
+    for i in range(0, len(grafo)):
+        if not visitado[i]:
+            dfs_fortemente_conexo(grafo, i, visitado, pilha)
+
+    grafo_transposto = transpor_grafo(grafo)
+
+    visitado = [False] * len(grafo)
+    componente_forte_conexos = []
+
+    while pilha:
+        v = pilha.pop()
+        if not visitado[v]:
+            componente = []
+            dfs_fortemente_conexo(grafo_transposto, v, visitado, componente)
+            componente_forte_conexos.append(componente)
+
+    return componente_forte_conexos
 
 
 if __name__ == '__main__':

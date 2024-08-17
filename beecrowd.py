@@ -339,24 +339,26 @@ def euleriano(arestas: dict, nao_direcionado) -> int:
 
 
 # tg
-def dfs(grafo: dict, v: int):
+def dfs(grafo: dict, v: int) -> list:
     arvore_dfs = []
-    pilha = [v]
+    pilha = [(grafo[v][0][0],v)]
     visitado = set()
 
     while pilha:
         vertice = pilha.pop()
 
-        if vertice not in visitado:
-            visitado.add(vertice)
+        if vertice[1] not in visitado:
+            visitado.add(vertice[1])
+            arvore_dfs.append(vertice[0])
 
             ultimo_id = -1
-            for (id_aresta, vizinho, peso) in sorted(grafo[vertice], key=lambda x: x[1], reverse=True):
+            for (id_aresta, vizinho, peso) in sorted(grafo[vertice[1]], key=lambda x: x[1], reverse=True):
                 if vizinho not in visitado:
-                    pilha.append(vizinho)
-                    ultimo_id = id_aresta
-            if ultimo_id != -1:
-                arvore_dfs.append(ultimo_id)
+                    pilha.append((id_aresta,vizinho))
+#                    ultimo_id = id_aresta
+#            if ultimo_id != -1:
+#                arvore_dfs.append(ultimo_id)
+    arvore_dfs.remove(0)
     return arvore_dfs
 
 def conexo(v: int, grafo: dict, nao_direcionado: bool):
