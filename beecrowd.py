@@ -4,14 +4,14 @@ from collections import deque, defaultdict
 def ler_grafo_terminal(nao_direcionado: bool = True):
     # Lê o número de vértices e arestas
     v, a = map(int, input("Digite o número de vértices e arestas (separados por espaço): ").split())
-    print(v, a)
+    # print(v, a)
 
     # Lê a direção do grafo
     direcao = input().strip()
-    print(direcao)
+    # print(direcao)
     if direcao != "nao_direcionado":
         nao_direcionado = False
-    print(nao_direcionado)
+    # print(nao_direcionado)
 
     # Inicializa o dicionário para armazenar as arestas
     arestas = {}
@@ -39,22 +39,25 @@ def possui_ciclo(vertices, arestas, nao_direcionado):
             if vizinho not in visitado:
                 pai[vizinho] = atual
                 if busca_profundidade(vizinho, atual):
-                    return True
+                    return 1
             elif vizinho != anterior:
                 # Encontrou um ciclo
-                return True
-        return False
+                return 1
+        return 0
 
     # Verificar todos os componentes do grafo
     for vertice in vertices:
         if vertice not in visitado:
             if busca_profundidade(vertice, -1):
-                return True
-    return False
+                return 1
+    return 0
 
 # ORDENAÇÃO TOPOLÓGICA (PAI MANJA)
 def ordenacao_topologica(grafo, nao_direcionado):
     if nao_direcionado:
+        return -1
+    
+    if possui_ciclo(grafo.keys(), grafo, nao_direcionado):
         return -1
     
     #verificar ciclo
@@ -87,7 +90,7 @@ def fecho_transitivo(grafo, vertice_inicial=0, nao_direcionado=False):
     #grafo_9.txt é bom p testar
 
     if (nao_direcionado):
-        print(-1)
+        return -1
     # Inicializando a estrutura auxiliar para armazenar os vértices alcançáveis
     visitado = set()
     fecho = []
@@ -106,7 +109,11 @@ def fecho_transitivo(grafo, vertice_inicial=0, nao_direcionado=False):
     return fecho
 
 # árvore geradora mínima
-def economia(arestas):
+def economia(arestas, nao_direcionado):
+
+    if (not nao_direcionado):
+        return -1
+
     visitados = set()
     pq = []
     total_minimo = 0
@@ -132,7 +139,11 @@ def economia(arestas):
     return total_minimo
 
 # arestas ponte
-def encontrarPontes(grafo):
+def encontrarPontes(grafo, nao_direcionado):
+
+    if not nao_direcionado:
+        return -1 
+
     n = len(grafo)
     descoberta = [-1] * n
     menorTempo = [-1] * n
@@ -235,7 +246,11 @@ def valor_do_caminho_minimo_entre_2_vertices(grafo: dict):
                 heapq.heappush(fila, (distancia, vizinho))
     return -1
 
-def encontra_vertice_articulacao(grafo):
+def encontra_vertice_articulacao(grafo, nao_direcionado):
+
+    if not nao_direcionado:
+        return -1
+
     # Inicializa estruturas para a busca em profundidade
     tempo = [0]  # Relógio de tempo da DFS
     num_vertices = len(grafo)
@@ -282,55 +297,158 @@ def encontra_vertice_articulacao(grafo):
     return vertices_articulacao
 
 
+def conexoFred(v: int, grafo: dict, nao_direcionado: bool) -> int:
+    grafo_temp = {k: v[:] for k, v in grafo.items()}  # Cria uma cópia profunda do grafo
+    
+    # if not nao_direcionado:
+    #     for i in range(0, len(grafo_temp)):
+    #         for aresta in grafo_temp[i]:
+    #             grafo_temp[aresta[1]].append((aresta[0], i, aresta[2]))
+                
+    visitado = {k: False for k in grafo_temp}
+    pilha = [v]
+
+    while pilha:
+        vertice = pilha.pop()
+
+        if not visitado[vertice]:
+            visitado[vertice] = True
+
+            for vizinho in grafo_temp.get(vertice, []):
+                if not visitado[vizinho[1]]:
+                    pilha.append(vizinho[1])
+
+    if all(visitado.values()):
+        return 1
+    return 0
+
+def euleriano(arestas: dict, nao_direcionado) -> int:
+    # Para ver se é euleriano basta verificar se todos os vértices possuem grau par. Se sim, é euleriano (o grafo precisa ser conexo)
+
+    if (not conexoFred(list(arestas.keys())[0], arestas, nao_direcionado)):
+        return 0
+    
+    for vertice in arestas:
+        # Para cada vértice, ver quantas arestas ele possui. 
+        # Ex.: 1: [(0, 0, 1), (1, 2, 1), (2, 3, 1)]. Nesse caso o vértice 1 tem grau 3 e consequentemente resto 1
+        if (len(arestas[vertice]) % 2 == 1):
+            return 0
+    return 1
+
+
 
 
 # tg
+def dfs(grafo: dict, v: int):
+    arvore_dfs = []
+    pilha = [v]
+    visitado = set()
 
+    while pilha:
+        vertice = pilha.pop()
+
+        if vertice not in visitado:
+            visitado.add(vertice)
+
+            ultimo_id = -1
+            for (id_aresta, vizinho, peso) in sorted(grafo[vertice], key=lambda x: x[1], reverse=True):
+                if vizinho not in visitado:
+                    pilha.append(vizinho)
+                    ultimo_id = id_aresta
+            if ultimo_id != -1:
+                arvore_dfs.append(ultimo_id)
+    return arvore_dfs
+
+def conexo(v: int, grafo: dict, nao_direcionado: bool):
+    if not nao_direcionado:
+        for i in range(0, len(grafo)):
+            for aresta in grafo[i]:
+                grafo[aresta[1]].append((aresta[0], i, aresta[2]))
+
+    visitado = [False] * len(list(grafo.keys()))
+
+    pilha = [v]
+
+    while pilha:
+        vertice = pilha.pop()
+
+        if not visitado[vertice]:
+            visitado[vertice] = True
+
+            for vizinho in grafo[vertice]:
+                if not visitado[vizinho[1]]:
+                    pilha.append(vizinho[1])
+
+    if all(visitado):
+        return 1
+    return 0
+
+
+def componentes_conexas(grafo:dict, nao_orientado) -> list:
+
+    if not nao_orientado:
+        return -1
+    
+    contador = 0
+    visitado = [False] * len(list(grafo.keys()))
+
+    pilha = []
+    comp_conexos = []
+    for i in range(len(visitado)):
+        if not visitado[i]:
+            comp_conexos1 = []
+            contador += 1
+            pilha.append(i)
+            while pilha:
+                vertice = pilha.pop()
+                if not visitado[vertice]:
+                    comp_conexos1.append(vertice)
+                    visitado[vertice] = True
+
+                    for vizinho in grafo[vertice]:
+                        if not visitado[vizinho[1]]:
+                            pilha.append(vizinho[1])
+            comp_conexos.append(sorted(comp_conexos1))
+    return comp_conexos
 
 # func main
 def main():
     opcoes = input()
     opcoes = opcoes.split(" ")
-    print(opcoes)
     vertices, arestas, nao_direcionado = ler_grafo_terminal()
-    
     for func in opcoes:
         if func == '0':
-            print("conexo")
+            # print(conexo(0, arestas, nao_direcionado))
+            print("conexo ta cagando as outras, criar grafo temporario para manipular")
         elif func == '1':
             print("bipartido")
         elif func == '2':
-            print("euleriano")
+            print(euleriano(arestas, nao_direcionado))
         elif func == '3':
             print(possui_ciclo(vertices, arestas, nao_direcionado))
         elif func == '4':
-            print("componentes conexas")
+            print(componentes_conexas(arestas, nao_direcionado))
         elif func == '5':
             print("componentes fortemente conexas")
         elif func == '6':
-            print("vertices de articulacao")
+            print(encontra_vertice_articulacao(arestas, nao_direcionado))
         elif func == '7':
-            print("encontrarPontes")
-            # print(encontrarPontes(arestas))
+            print(encontrarPontes(arestas, nao_direcionado))
         elif func == '8':
-            print("dfs")
+            print(dfs(arestas, 0))
         elif func == '9':
-            print("arvore_largura")
-            # arvore_largura(arestas, vertice_inicial=0)
+            print(arvore_largura(arestas, vertice_inicial=0))
         elif func == '10':
-            print("economia")
-            # print(economia(arestas))
+            print(economia(arestas, nao_direcionado))
         elif func == '11':
-            print("ordenacao_topologica")
-            # print(ordenacao_topologica(arestas, nao_direcionado))
+            print(ordenacao_topologica(arestas, nao_direcionado))
         elif func == '12':
-            print("valor_do_caminho_minimo_entre_2_vertices")
-            # print(valor_do_caminho_minimo_entre_2_vertices(arestas))
+            print(valor_do_caminho_minimo_entre_2_vertices(arestas))
         elif func == '13':
             print("fluxo maximo")
         elif func == '14':
-            print("fecho_transitivo")
-            # fecho_transitivo(arestas, 0, nao_direcionado)
+            # nao precisa do 0 na saida
+            print(fecho_transitivo(arestas, 0, nao_direcionado))
 
 
 main()
