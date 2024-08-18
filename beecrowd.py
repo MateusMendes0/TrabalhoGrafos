@@ -106,13 +106,21 @@ def fecho_transitivo(grafo, vertice_inicial=0, nao_direcionado=False):
 
     # Iniciar DFS a partir do vértice inicial
     dfs(vertice_inicial)
+
+    fecho.remove(0)
+    
     return fecho
 
 # árvore geradora mínima
-def economia(arestas, nao_direcionado):
+def economia(vertices, arestas, nao_direcionado):
 
     if (not nao_direcionado):
         return -1
+    
+    if (possui_ciclo(vertices, arestas, nao_direcionado)):
+        print("possui ciclo")
+        return -1
+
 
     visitados = set()
     pq = []
@@ -362,13 +370,14 @@ def dfs(grafo: dict, v: int) -> list:
     return arvore_dfs
 
 def conexo(v: int, grafo: dict, nao_direcionado: bool):
-    grafo_temp = grafo
+    grafo_temp = {k: v[:] for k, v in grafo.items()}
+    
     if not nao_direcionado:
         for i in range(0, len(grafo)):
             for aresta in grafo[i]:
                 grafo_temp[aresta[1]].append((aresta[0], i, aresta[2]))
 
-    visitado = [False] * len(list(grafo.keys()))
+    visitado = [False] * len(list(grafo_temp.keys()))
 
     pilha = [v]
 
@@ -412,7 +421,8 @@ def componentes_conexas(grafo:dict, nao_orientado) -> list:
                         if not visitado[vizinho[1]]:
                             pilha.append(vizinho[1])
             comp_conexos.append(sorted(comp_conexos1))
-    return comp_conexos
+
+    return len(comp_conexos)
 
 
 def bfs_bipartido(grafo, origem, cor):
@@ -432,7 +442,11 @@ def bfs_bipartido(grafo, origem, cor):
     return True
 
 
-def bipartido(grafo):
+def bipartido(grafo, nao_direcionado):
+    if not nao_direcionado:
+        return 0
+    
+
     cor = {}
 
     for origem in grafo:
@@ -442,6 +456,62 @@ def bipartido(grafo):
 
     return 1
 
+
+
+
+
+
+def kosaraju_estruturado(V, grafo, nao_direcionado):
+    if nao_direcionado:
+        return -1
+
+    def dfs(v, visitado, pilha):
+        visitado.add(v)
+        for _, vizinho, _ in grafo.get(v, []):
+            if vizinho not in visitado:
+                dfs(vizinho, visitado, pilha)
+        pilha.append(v)
+
+    def transpor_grafo(grafo):
+        transposto = {}
+        for origem in grafo:
+            for id_aresta, destino, peso in grafo[origem]:
+                if destino not in transposto:
+                    transposto[destino] = []
+                transposto[destino].append((id_aresta, origem, peso))
+        return transposto
+
+    def dfs_transposto(v, visitado, componente, grafo_transposto):
+        visitado.add(v)
+        componente.append(v)
+        for _, vizinho, _ in grafo_transposto.get(v, []):
+            if vizinho not in visitado:
+                dfs_transposto(vizinho, visitado, componente, grafo_transposto)
+
+    pilha = []
+    visitado = set()
+
+    # Passo 1: Preenchendo a pilha com a ordem de finalização dos vértices
+    for vertice in grafo:
+        if vertice not in visitado:
+            dfs(vertice, visitado, pilha)
+
+    # Passo 2: Transpor o grafo
+    grafo_transposto = transpor_grafo(grafo)
+
+    # Passo 3: Processar os vértices na ordem inversa da finalização
+    visitado = set()
+    componentes = []
+    while pilha:
+        v = pilha.pop()
+        if v not in visitado:
+            componente = []
+            dfs_transposto(v, visitado, componente, grafo_transposto)
+            componentes.append(componente)
+    
+    return len(componentes)
+
+
 # func main
 def main():
     opcoes = input()
@@ -449,12 +519,9 @@ def main():
     vertices, arestas, nao_direcionado = ler_grafo_terminal()
     for func in opcoes:
         if func == '0':
-            # print(conexo(0, arestas, nao_direcionado))
-            print("conexo ta cagando as outras, criar grafo temporario para manipular")
+            print(conexo(0, arestas, nao_direcionado))
         elif func == '1':
-            print("bipartido")
-            if nao_direcionado:
-                print(bipartido(arestas))
+            print(bipartido(arestas, nao_direcionado))
         elif func == '2':
             print(euleriano(arestas, nao_direcionado))
         elif func == '3':
@@ -462,17 +529,31 @@ def main():
         elif func == '4':
             print(componentes_conexas(arestas, nao_direcionado))
         elif func == '5':
-            print("componentes fortemente conexas")
+            print(kosaraju_estruturado(vertices, arestas, nao_direcionado))
         elif func == '6':
-            print(encontra_vertice_articulacao(arestas, nao_direcionado))
+            vertices_art = encontra_vertice_articulacao(arestas, nao_direcionado)
+            if type (vertices_art) == list:
+                if (len(vertices_art) == 0):
+                    print(0)
+                else:
+                    print(vertices_art)
+            else:
+                print(vertices_art)
         elif func == '7':
-            print(encontrarPontes(arestas, nao_direcionado))
+            pontes = encontrarPontes(arestas, nao_direcionado)
+            if (type (pontes) == list):
+                if (len(pontes) == 0):
+                    print(-1)
+                else:
+                    print(pontes)
+            else:
+                print(pontes)
         elif func == '8':
             print(dfs(arestas, 0))
         elif func == '9':
             print(arvore_largura(arestas, vertice_inicial=0))
         elif func == '10':
-            print(economia(arestas, nao_direcionado))
+            print(economia(vertices, arestas, nao_direcionado))
         elif func == '11':
             print(ordenacao_topologica(arestas, nao_direcionado))
         elif func == '12':
@@ -480,7 +561,6 @@ def main():
         elif func == '13':
             print("fluxo maximo")
         elif func == '14':
-            # nao precisa do 0 na saida
             print(fecho_transitivo(arestas, 0, nao_direcionado))
 
 
