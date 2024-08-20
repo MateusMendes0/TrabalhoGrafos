@@ -1,6 +1,7 @@
 import heapq
 from collections import deque, defaultdict
 
+
 def ler_grafo_terminal(nao_direcionado: bool = True):
     # Lê o número de vértices e arestas
     v, a = map(int, input().split())
@@ -22,8 +23,9 @@ def ler_grafo_terminal(nao_direcionado: bool = True):
         arestas[v1].append((id, v2, p))
         if nao_direcionado:
             arestas[v2].append((id, v1, p))
-    
+
     return list(arestas.keys()), arestas, nao_direcionado
+
 
 def possui_ciclo(vertices, arestas, nao_direcionado):
     visitado = set()
@@ -48,18 +50,19 @@ def possui_ciclo(vertices, arestas, nao_direcionado):
                 return 1
     return 0
 
+
 def ordenacao_topologica(grafo, nao_direcionado):
     if nao_direcionado:
         return -1
-    
+
     if possui_ciclo(grafo.keys(), grafo, nao_direcionado):
         return -1
-    
+
     # Inicializando estruturas auxiliares
     visitado = set()
     pilha = []
     resultado = []
-    
+
     # Função auxiliar para DFS
     def dfs(v):
         visitado.add(v)
@@ -67,23 +70,24 @@ def ordenacao_topologica(grafo, nao_direcionado):
             if destino not in visitado:
                 dfs(destino)
         pilha.append(v)
-    
+
     # Considerando a ordem lexicográfica dos vértices
     for vertice in sorted(grafo.keys()):
         if vertice not in visitado:
             dfs(vertice)
-    
+
     # A ordem topológica será o reverso da pilha
     while pilha:
         resultado.append(pilha.pop())
     return resultado
 
+
 def fecho_transitivo(grafo, vertice_inicial=0, nao_direcionado=False):
-    #grafo_9.txt é bom p testar
+    # grafo_9.txt é bom p testar
 
     if (nao_direcionado):
         return -1
-    
+
     # Inicializando a estrutura auxiliar para armazenar os vértices alcançáveis
     visitado = set()
     fecho = []
@@ -101,17 +105,16 @@ def fecho_transitivo(grafo, vertice_inicial=0, nao_direcionado=False):
     dfs(vertice_inicial)
 
     fecho.remove(0)
-    
+
     return fecho
 
-def arvore_minima(vertices, arestas, nao_direcionado):
 
+def arvore_minima(vertices, arestas, nao_direcionado):
     if (not nao_direcionado):
         return -1
-    
+
     if (possui_ciclo(vertices, arestas, nao_direcionado)):
         return -1
-
 
     visitados = set()
     pq = []
@@ -120,7 +123,7 @@ def arvore_minima(vertices, arestas, nao_direcionado):
     # Seleciona um vértice inicial (o primeiro vértice da lista de chaves do dicionário)
     inicial = next(iter(arestas))
     visitados.add(inicial)
-    
+
     # Adiciona as arestas conectadas ao vértice inicial na fila de prioridades
     for id_aresta, vertice, peso in arestas[inicial]:
         heapq.heappush(pq, (peso, vertice))
@@ -137,9 +140,10 @@ def arvore_minima(vertices, arestas, nao_direcionado):
 
     return total_minimo
 
+
 def encontrarPontes(grafo, nao_direcionado):
     if not nao_direcionado:
-        return -1 
+        return -1
 
     n = len(grafo)
     descoberta = [-1] * n
@@ -150,18 +154,18 @@ def encontrarPontes(grafo, nao_direcionado):
     def dfs(u, tempo):
         descoberta[u] = menorTempo[u] = tempo
         tempo += 1
-        
+
         for (idAresta, v, peso) in grafo[u]:
             if descoberta[v] == -1:  # Se v não foi visitado
                 pai[v] = u
                 tempo = dfs(v, tempo)
-                
+
                 menorTempo[u] = min(menorTempo[u], menorTempo[v])
-                
+
                 # Se a menor altura alcançável de v é maior que descoberta de u, (u, v) é uma ponte
                 if menorTempo[v] > descoberta[u]:
                     pontes.append(idAresta)
-            
+
             elif v != pai[u]:  # Atualiza menorTempo[u] para back edge
                 menorTempo[u] = min(menorTempo[u], descoberta[v])
 
@@ -171,13 +175,14 @@ def encontrarPontes(grafo, nao_direcionado):
     for i in range(n):
         if descoberta[i] == -1:
             dfs(i, 0)
-    
+
     return sorted(pontes)
+
 
 def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
     visitados = set()
     fila = deque([vertice_inicial])
-    
+
     arvore = []
 
     while fila:
@@ -190,16 +195,14 @@ def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
             if destino not in visitados:
                 fila.append(destino)
                 visitados.add(destino)
-                arvore.append(id_aresta)  
+                arvore.append(id_aresta)
 
     return arvore
 
-def valor_do_caminho_minimo_entre_2_vertices(grafo: dict, nao_orientado):
-    if (nao_orientado):
-        return -1
 
+def valor_do_caminho_minimo_entre_2_vertices(grafo: dict, nao_orientado):
     vertices = list(grafo.keys())
-    
+
     origem = min(vertices)
     destino = max(vertices)
 
@@ -209,17 +212,16 @@ def valor_do_caminho_minimo_entre_2_vertices(grafo: dict, nao_orientado):
         for aresta in arestas:
             peso = aresta[2]
             pesos.add(peso)
-            
+
     if len(pesos) <= 1:
         return -1
-    
-    # Initialize-single-source  
-    distancias = {vertice: float('inf') for vertice in grafo} # Definir todos os vertices com distancia infinita
+
+    # Initialize-single-source
+    distancias = {vertice: float('inf') for vertice in grafo}  # Definir todos os vertices com distancia infinita
     distancias[origem] = 0
 
-    # Fila de prioridades 
+    # Fila de prioridades
     fila = [(0, origem)]  # (distância, vértice)
-    
 
     while fila:
         dist_atual, vertice_atual = heapq.heappop(fila)
@@ -245,8 +247,8 @@ def valor_do_caminho_minimo_entre_2_vertices(grafo: dict, nao_orientado):
     # Não chegou ao destino
     return -1
 
-def encontra_vertice_articulacao(grafo, nao_direcionado):
 
+def encontra_vertice_articulacao(grafo, nao_direcionado):
     if not nao_direcionado:
         return -1
 
@@ -264,7 +266,7 @@ def encontra_vertice_articulacao(grafo, nao_direcionado):
         discover[v] = low[v] = tempo[0]
         tempo[0] += 1
         filhos = 0  # Conta o número de filhos na DFS
-        
+
         for (id_aresta, vizinho, peso) in grafo[v]:
             if discover[vizinho] == -1:  # Se vizinho não foi descoberto
                 parent[vizinho] = v
@@ -295,9 +297,10 @@ def encontra_vertice_articulacao(grafo, nao_direcionado):
 
     return vertices_articulacao
 
+
 def conexoAux(v: int, grafo: dict, nao_direcionado: bool) -> int:
     grafo_temp = {k: v[:] for k, v in grafo.items()}  # Cria uma cópia do grafo
-    
+
     visitado = {k: False for k in grafo_temp}
     pilha = [v]
 
@@ -315,21 +318,22 @@ def conexoAux(v: int, grafo: dict, nao_direcionado: bool) -> int:
         return 1
     return 0
 
+
 def euleriano(arestas: dict, nao_direcionado) -> int:
-    
     # Verificar se é conexo
     if (not conexoAux(list(arestas.keys())[0], arestas, nao_direcionado)):
         return 0
-    
+
     for vertice in arestas:
-        # Para cada vértice, ver quantas arestas ele possui. 
+        # Para cada vértice, ver quantas arestas ele possui.
         if (len(arestas[vertice]) % 2 == 1):
             return 0
     return 1
 
+
 def dfs(grafo: dict, v: int) -> list:
     arvore_dfs = []
-    pilha = [(grafo[v][0][0],v)]
+    pilha = [(grafo[v][0][0], v)]
     visitado = set()
 
     while pilha:
@@ -344,15 +348,16 @@ def dfs(grafo: dict, v: int) -> list:
             ultimo_id = -1
             for (id_aresta, vizinho, peso) in sorted(grafo[vertice[1]], key=lambda x: x[1], reverse=True):
                 if vizinho not in visitado:
-                    pilha.append((id_aresta,vizinho))
+                    pilha.append((id_aresta, vizinho))
 
     # Remove o identificador 0 da árvore
     arvore_dfs.remove(0)
     return arvore_dfs
 
-def conexo(v: int, grafo: dict, nao_direcionado: bool): 
-    grafo_temp = {k: v[:] for k, v in grafo.items()} # copiar grafo
-    
+
+def conexo(v: int, grafo: dict, nao_direcionado: bool):
+    grafo_temp = {k: v[:] for k, v in grafo.items()}  # copiar grafo
+
     # Se o grafo for direcionado, transformar em não-direcionado
     if not nao_direcionado:
         for i in range(0, len(grafo)):
@@ -380,17 +385,18 @@ def conexo(v: int, grafo: dict, nao_direcionado: bool):
         return 1
     return 0
 
-def componentes_conexas(grafo:dict, nao_orientado) -> list:
+
+def componentes_conexas(grafo: dict, nao_orientado) -> list:
     if not nao_orientado:
         return -1
-    
+
     contador = 0
     visitado = [False] * len(list(grafo.keys()))
 
     pilha = []
     comp_conexos = []
     for i in range(len(visitado)):
-        if not visitado[i]: # Se o vértice ainda não foi visitado
+        if not visitado[i]:  # Se o vértice ainda não foi visitado
             comp_conexos1 = []
             contador += 1
             pilha.append(i)
@@ -410,6 +416,7 @@ def componentes_conexas(grafo:dict, nao_orientado) -> list:
 
     return len(comp_conexos)
 
+
 def bfs_bipartido(grafo, origem, cor):
     fila = deque([origem])
     cor[origem] = 0
@@ -424,34 +431,36 @@ def bfs_bipartido(grafo, origem, cor):
                 # Atribui a cor oposta ao vizinho
                 cor[vizinho] = 1 - cor_atual
                 fila.append(vizinho)
-            elif cor[vizinho] == cor_atual: # Se o vizinho tem a mesma cor, o grafo não é bipartido
+            elif cor[vizinho] == cor_atual:  # Se o vizinho tem a mesma cor, o grafo não é bipartido
                 return False
     return True
+
 
 def bipartido(grafo, nao_direcionado):
     if not nao_direcionado:
         return 0
-    
-    cor = {} # Dicionário para armazenar as cores dos vértices
+
+    cor = {}  # Dicionário para armazenar as cores dos vértices
 
     # Verificar se cada componente do grafo é bipartida
     for origem in grafo:
-        if origem not in cor: # Se o vértice ainda não foi visitado
+        if origem not in cor:  # Se o vértice ainda não foi visitado
             if not bfs_bipartido(grafo, origem, cor):
                 return 0
 
     return 1
+
 
 def componentes_fortemente_conexos(V, grafo, nao_direcionado):
     if nao_direcionado:
         return -1
 
     def dfs(v, visitado, pilha):
-        visitado.add(v) # Marca o vértice como visitado
-        for _, vizinho, _ in grafo.get(v, []): # Explora todos os vizinhos do vértice atual
+        visitado.add(v)  # Marca o vértice como visitado
+        for _, vizinho, _ in grafo.get(v, []):  # Explora todos os vizinhos do vértice atual
             if vizinho not in visitado:
                 dfs(vizinho, visitado, pilha)
-        pilha.append(v) # Adiciona o vértice na pilha após explorar todos os vizinhos
+        pilha.append(v)  # Adiciona o vértice na pilha após explorar todos os vizinhos
 
     def transpor_grafo(grafo):
         transposto = {}
@@ -463,7 +472,7 @@ def componentes_fortemente_conexos(V, grafo, nao_direcionado):
         return transposto
 
     def dfs_transposto(v, visitado, componente, grafo_transposto):
-        visitado.add(v) # Marca o vértice como visitado
+        visitado.add(v)  # Marca o vértice como visitado
         componente.append(v)
         for _, vizinho, _ in grafo_transposto.get(v, []):  # Explora todos os vizinhos no grafo transposto
             if vizinho not in visitado:
@@ -489,51 +498,53 @@ def componentes_fortemente_conexos(V, grafo, nao_direcionado):
             componente = []
             dfs_transposto(v, visitado, componente, grafo_transposto)
             componentes.append(componente)
-    
+
     return len(componentes)
+
 
 def bfsFluxoMaximo(grafo_residual, origem, destino, pai):
     visitado = set()
     fila = deque([origem])
     visitado.add(origem)
-    
+
     while fila:
         u = fila.popleft()
-        
+
         for v, capacidade in grafo_residual[u].items():
             if v not in visitado and capacidade > 0:  # Aresta com capacidade residual
                 fila.append(v)
                 visitado.add(v)
                 pai[v] = u
-                
+
                 if v == destino:  # Encontrou o destino
                     return True
     return False
+
 
 def fluxo_maximo(grafo, origem, destino, nao_direcionado):
     if nao_direcionado:
         return -1
 
     grafo_residual = defaultdict(dict)
-    
+
     # Construir o grafo residual
     for u in grafo:
         for _, v, capacidade in grafo[u]:
             grafo_residual[u][v] = grafo_residual[u].get(v, 0) + capacidade
             grafo_residual[v][u] = grafo_residual[v].get(u, 0)  # aresta reversa
-    
+
     pai = {}
     fluxo_maximo = 0
-    
+
     while bfsFluxoMaximo(grafo_residual, origem, destino, pai):
         fluxo_do_caminho = float('Inf')
         s = destino
-        
+
         # Encontrar a capacidade mínima no caminho encontrado
         while s != origem:
             fluxo_do_caminho = min(fluxo_do_caminho, grafo_residual[pai[s]][s])
             s = pai[s]
-        
+
         # Atualizar as capacidades residuais do grafo
         v = destino
         while v != origem:
@@ -541,11 +552,12 @@ def fluxo_maximo(grafo, origem, destino, nao_direcionado):
             grafo_residual[u][v] -= fluxo_do_caminho
             grafo_residual[v][u] += fluxo_do_caminho
             v = pai[v]
-        
+
         # Somar ao fluxo total
         fluxo_maximo += fluxo_do_caminho
-    
+
     return fluxo_maximo
+
 
 def main():
     opcoes = input()
@@ -566,7 +578,7 @@ def main():
             print(componentes_fortemente_conexos(vertices, arestas, nao_direcionado))
         elif func == '6':
             vertices_art = encontra_vertice_articulacao(arestas, nao_direcionado)
-            if type (vertices_art) == list:
+            if type(vertices_art) == list:
                 if (len(vertices_art) == 0):
                     print(0)
                 else:
@@ -575,7 +587,7 @@ def main():
                 print(vertices_art)
         elif func == '7':
             pontes = encontrarPontes(arestas, nao_direcionado)
-            if (type (pontes) == list):
+            if (type(pontes) == list):
                 if (len(pontes) == 0):
                     print(-1)
                 else:
@@ -583,9 +595,9 @@ def main():
             else:
                 print(pontes)
         elif func == '8':
-            print(dfs(arestas, 0))
+            print(" ".join(map(str, dfs(arestas, 0))))
         elif func == '9':
-            print(arvore_largura(arestas, vertice_inicial=0))
+            print(" ".join(map(str, arvore_largura(arestas, vertice_inicial=0))))
         elif func == '10':
             print(arvore_minima(vertices, arestas, nao_direcionado))
         elif func == '11':
@@ -597,4 +609,5 @@ def main():
         elif func == '14':
             print(fecho_transitivo(arestas, 0, nao_direcionado))
 
-main() 
+
+main()
