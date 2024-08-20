@@ -3,7 +3,7 @@ from collections import deque, defaultdict
 
 def ler_grafo_terminal(nao_direcionado: bool = True):
     # Lê o número de vértices e arestas
-    v, a = map(int, input("Digite o número de vértices e arestas (separados por espaço): ").split())
+    v, a = map(int, input().split())
 
     # Lê a direção do grafo
     direcao = input().strip()
@@ -145,18 +145,16 @@ def encontrarPontes(grafo, nao_direcionado):
     descoberta = [-1] * n
     menorTempo = [-1] * n
     pai = [-1] * n
-    tempo = 0
     pontes = []
 
-    def dfs(u):
-        nonlocal tempo
+    def dfs(u, tempo):
         descoberta[u] = menorTempo[u] = tempo
         tempo += 1
         
         for (idAresta, v, peso) in grafo[u]:
             if descoberta[v] == -1:  # Se v não foi visitado
                 pai[v] = u
-                dfs(v)
+                tempo = dfs(v, tempo)
                 
                 menorTempo[u] = min(menorTempo[u], menorTempo[v])
                 
@@ -167,12 +165,14 @@ def encontrarPontes(grafo, nao_direcionado):
             elif v != pai[u]:  # Atualiza menorTempo[u] para back edge
                 menorTempo[u] = min(menorTempo[u], descoberta[v])
 
+        return tempo
+
     # Chama DFS para cada vértice não visitado
     for i in range(n):
         if descoberta[i] == -1:
-            dfs(i)
+            dfs(i, 0)
     
-    return pontes
+    return sorted(pontes)
 
 def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
     visitados = set()
@@ -194,7 +194,10 @@ def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
 
     return arvore
 
-def valor_do_caminho_minimo_entre_2_vertices(grafo: dict):
+def valor_do_caminho_minimo_entre_2_vertices(grafo: dict, nao_orientado):
+    if (nao_orientado):
+        return -1
+
     vertices = list(grafo.keys())
     
     origem = min(vertices)
@@ -507,7 +510,10 @@ def bfsFluxoMaximo(grafo_residual, origem, destino, pai):
                     return True
     return False
 
-def fluxo_maximo(grafo, origem, destino):
+def fluxo_maximo(grafo, origem, destino, nao_direcionado):
+    if nao_direcionado:
+        return -1
+
     grafo_residual = defaultdict(dict)
     
     # Construir o grafo residual
@@ -585,9 +591,9 @@ def main():
         elif func == '11':
             print(ordenacao_topologica(arestas, nao_direcionado))
         elif func == '12':
-            print(valor_do_caminho_minimo_entre_2_vertices(arestas))
+            print(valor_do_caminho_minimo_entre_2_vertices(arestas, nao_direcionado))
         elif func == '13':
-            fluxo_maximo(arestas, 0, vertices[-1])
+            print(fluxo_maximo(arestas, 0, vertices[-1], nao_direcionado))
         elif func == '14':
             print(fecho_transitivo(arestas, 0, nao_direcionado))
 
