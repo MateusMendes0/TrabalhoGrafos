@@ -255,39 +255,39 @@ def encontra_vertice_articulacao(grafo, nao_direcionado):
     # Estruturas para a busca em profundidade
     tempo = [0]  # Relógio de tempo da DFS
     num_vertices = len(grafo)
-    discover = [-1] * num_vertices  # Tempo de descoberta dos vértices na DFS
-    low = [-1] * num_vertices  # Menor tempo de descoberta acessível
-    parent = [-1] * num_vertices  # Vértice pai na DFS
+    descoberta = [-1] * num_vertices  # Tempo de descoberta dos vértices na DFS
+    menor = [-1] * num_vertices  # Menor tempo de descoberta acessível
+    pai = [-1] * num_vertices  # Vértice pai na DFS
     articulacao = [False] * num_vertices  # Marca se um vértice é de articulação
     vertices_articulacao = []  # Lista de vértices de articulação
 
     def dfs(v):
         # Aumenta o tempo e marca o tempo de descoberta do vértice
-        discover[v] = low[v] = tempo[0]
+        descoberta[v] = menor[v] = tempo[0]
         tempo[0] += 1
         filhos = 0  # Conta o número de filhos na DFS
 
         for (id_aresta, vizinho, peso) in grafo[v]:
-            if discover[vizinho] == -1:  # Se vizinho não foi descoberto
-                parent[vizinho] = v
+            if descoberta[vizinho] == -1:  # Se vizinho não foi descoberto
+                pai[vizinho] = v
                 filhos += 1
                 dfs(vizinho)
 
                 # Atualiza o menor tempo de descoberta acessível
-                low[v] = min(low[v], low[vizinho])
+                menor[v] = min(menor[v], menor[vizinho])
 
                 # Checa condição para que v seja vértice de articulação
-                if parent[v] == -1 and filhos > 1:  # Raiz da DFS com mais de 1 filho
+                if pai[v] == -1 and filhos > 1:  # Raiz da DFS com mais de 1 filho
                     articulacao[v] = True
-                if parent[v] != -1 and low[vizinho] >= discover[v]:
+                if pai[v] != -1 and menor[vizinho] >= descoberta[v]:
                     articulacao[v] = True
 
-            elif vizinho != parent[v]:  # Atualiza low[v] para back edge
-                low[v] = min(low[v], discover[vizinho])
+            elif vizinho != pai[v]:  # Atualiza menor[v] para back edge
+                menor[v] = min(menor[v], descoberta[vizinho])
 
     # Chama DFS para cada vértice não visitado
     for i in sorted(grafo.keys()):  # Ordena os vértices em ordem lexicográfica
-        if discover[i] == -1:
+        if descoberta[i] == -1:
             dfs(i)
 
     # Coleta os vértices de articulação
@@ -451,7 +451,7 @@ def bipartido(grafo, nao_direcionado):
     return 1
 
 
-def componentes_fortemente_conexos(V, grafo, nao_direcionado):
+def componentes_fortemente_conexos(v, grafo, nao_direcionado):
     if nao_direcionado:
         return -1
 
